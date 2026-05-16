@@ -11,6 +11,7 @@ from ..config import ArtworkConfig
 from ..metadata import Covers
 
 _artwork_tempdirs: set[str] = set()
+_artwork_savedcovers: set[str] = set()
 
 logger = logging.getLogger("streamrip")
 
@@ -20,6 +21,12 @@ def remove_artwork_tempdirs():
     for path in _artwork_tempdirs:
         try:
             shutil.rmtree(path)
+        except FileNotFoundError:
+            pass
+    logger.debug("Removing saved covers %s", _artwork_savedcovers)
+    for path in _artwork_savedcovers:
+        try:
+            os.remove(path)
         except FileNotFoundError:
             pass
 
@@ -40,7 +47,7 @@ async def download_artwork(
     of the config setting.
 
     Embedded artworks are put in a temporary directory under `folder` called
-    "__embed" that can be deleted once a playlist or album is done downloading.
+    "__artwork" that can be deleted once a playlist or album is done downloading.
 
     Hi-res (saved) artworks are kept in `folder` as "cover.jpg".
 
@@ -69,6 +76,7 @@ async def download_artwork(
     _, l_url, saved_cover_path = covers.largest()
     if saved_cover_path is None and save_artwork:
         saved_cover_path = os.path.join(folder, "cover.jpg")
+        _artwork_savedcovers.add(saved_cover_path)
         assert l_url is not None
         downloadables.append(
             BasicDownloadable(session, l_url, "jpg").download(

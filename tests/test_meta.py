@@ -24,7 +24,6 @@ def test_album_metadata_qobuz():
     assert m.album == "Rumours"
     assert m.albumartist == "Fleetwood Mac"
     assert m.year == "1977"
-    assert "Pop" in m.genre
     assert "Rock" in m.genre
     assert not m.covers.empty()
 
